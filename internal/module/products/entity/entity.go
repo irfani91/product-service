@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"codebase-app/pkg/types"
 	"strconv"
 	"time"
 )
@@ -84,10 +83,10 @@ type UpdateProductResponse struct {
 }
 
 type ProductsRequest struct {
-	UserId      string `prop:"user_id" validate:"uuid"`
 	ShopId      string `query:"shop_id" validate:"omitempty,uuid"`
 	CategoryId  string `query:"category_id" validate:"omitempty,uuid"`
 	Name        string `query:"name" validate:"omitempty,max=255,min=3"`
+	Brand       string `query:"name" validate:"omitempty,max=255,min=3"`
 	PriceMinStr string `query:"price_min" validate:"omitempty,numeric,gte=0"`
 	PriceMaxStr string `query:"price_max" validate:"omitempty,numeric,gte=0"`
 	IsAvailable bool   `query:"is_available"`
@@ -99,7 +98,7 @@ type ProductsRequest struct {
 	PriceMax float64
 }
 
-func (r *ProductsRequest) SetDefault() {
+func (r *ProductsRequest) SetDefaults() {
 	if r.Page < 1 {
 		r.Page = 1
 	}
@@ -107,23 +106,6 @@ func (r *ProductsRequest) SetDefault() {
 	if r.Paginate < 1 {
 		r.Paginate = 10
 	}
-}
-
-type ProductItem struct {
-	Id         string    `json:"id" db:"id"`
-	CategoryId string    `json:"category_id" db:"category_id"`
-	ShopId     string    `json:"shop_id" db:"shop_id"`
-	Name       string    `json:"name" db:"name"`
-	ImageUrl   *string   `json:"image_url" db:"image_url"`
-	Brand      *string   `json:"brand" db:"brand"`
-	Price      float64   `json:"price" db:"price"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-}
-
-type ProductsResponse struct {
-	Items []ProductItem `json:"items"`
-	Meta  types.Meta    `json:"meta"`
 }
 
 func (r *ProductsRequest) CostumValidation() (int, map[string][]string) {
@@ -156,4 +138,40 @@ func (r *ProductsRequest) CostumValidation() (int, map[string][]string) {
 
 	errors = nil
 	return 0, errors
+}
+
+type ProductsResponse struct {
+	Items []Product `json:"items"`
+	Meta  Meta      `json:"meta"`
+}
+
+type Product struct {
+	Id         string    `json:"id" db:"id"`
+	CategoryId string    `json:"category_id" db:"category_id"`
+	ShopId     string    `json:"shop_id" db:"shop_id"`
+	Name       string    `json:"name" db:"name"`
+	Brand      *string   `json:"brand" db:"brand"`
+	ImageUrl   *string   `json:"image_url" db:"image_url"`
+	Price      float64   `json:"price" db:"price"`
+	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
+}
+
+type Meta struct {
+	TotalData int `json:"total_data"`
+	TotalPage int `json:"total_page"`
+	Page      int `json:"page"`
+	Paginate  int `json:"paginate"`
+}
+
+func (m *Meta) CountTotalPage() {
+	if m.TotalData == 0 {
+		m.TotalPage = 0
+		return
+	}
+
+	m.TotalPage = m.TotalData / m.Paginate
+	if m.TotalData%m.Paginate > 0 {
+		m.TotalPage++
+	}
 }

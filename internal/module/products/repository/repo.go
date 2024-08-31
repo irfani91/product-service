@@ -143,22 +143,22 @@ func (r *productRepository) UpdateProduct(ctx context.Context, req *entity.Updat
 	return resp, nil
 }
 
-func (r *productRepository) GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error) {
+func (r *productRepository) GetProducts(ctx context.Context, req *entity.ProductsRequest) (entity.ProductsResponse, error) {
 	type dao struct {
 		TotalData int `db:"total_data"`
-		entity.ProductItem
+		entity.Product
 	}
-
 	var (
-		resp = new(entity.ProductsResponse)
-		data = make([]dao, 0, req.Paginate)
+		res  entity.ProductsResponse
+		data = make([]dao, 0)
 		arg  = make(map[string]any)
 	)
-	resp.Items = make([]entity.ProductItem, 0, req.Paginate)
+	res.Meta.Page = req.Page
+	res.Meta.Paginate = req.Paginate
 
 	query := `
 		SELECT
-			COUNT(id) OVER() as total_data,
+			COUNT(*) OVER() AS total_data,
 			id,
 			category_id,
 			shop_id,
@@ -173,6 +173,7 @@ func (r *productRepository) GetProducts(ctx context.Context, req *entity.Product
 		WHERE
 			deleted_at IS NULL
 	`
+
 	if req.ShopId != "" {
 		query += " AND shop_id = :shop_id"
 		arg["shop_id"] = req.ShopId
@@ -186,6 +187,11 @@ func (r *productRepository) GetProducts(ctx context.Context, req *entity.Product
 	if req.Name != "" {
 		query += " AND name ILIKE '%' || :name || '%'"
 		arg["name"] = req.Name
+	}
+
+	if req.Brand != "" {
+		query += " AND name ILIKE '%' || :brand || '%'"
+		arg["brand"] = req.Brand
 	}
 
 	if req.PriceMinStr != "" {
@@ -204,27 +210,41 @@ func (r *productRepository) GetProducts(ctx context.Context, req *entity.Product
 
 	query += `
 		ORDER BY created_at DESC
+		LIMIT :paginate
+		OFFSET :offset
 	`
+	arg["paginate"] = req.Paginate
+	arg["offset"] = (req.Page - 1) * req.Paginate
 
-	err := r.db.SelectContext(ctx, &data, r.db.Rebind(query),
-		req.UserId,
-		req.Paginate,
-		req.Paginate*(req.Page-1),
-	)
+	nstmt, err := r.db.PrepareNamedContext(ctx, query)
 	if err != nil {
-		log.Error().Err(err).Any("payload", req).Msg("repository::GetProducts - Failed to get Products")
-		return nil, err
+		log.Error().Err(err).Any("payload", req).Msg("repository: GetProducts failed")
+		return res, err
 	}
+	defer nstmt.Close()
 
-	if len(data) > 0 {
-		resp.Meta.TotalData = data[0].TotalData
+	err = nstmt.SelectContext(ctx, &data, arg)
+	if err != nil {
+		log.Error().Err(err).Any("payload", req).Msg("repository: GetProducts failed")
+		return res, err
 	}
 
 	for _, d := range data {
-		resp.Items = append(resp.Items, d.ProductItem)
+		res.Items = append(res.Items, entity.Product{
+			Id:         d.Id,
+			CategoryId: d.CategoryId,
+			ShopId:     d.ShopId,
+			Name:       d.Name,
+			ImageUrl:   d.ImageUrl,
+			Price:      d.Price,
+			CreatedAt:  d.CreatedAt,
+			UpdatedAt:  d.UpdatedAt,
+		})
+
+		res.Meta.TotalData = d.TotalData
 	}
 
-	resp.Meta.CountTotalPage(req.Page, req.Paginate, resp.Meta.TotalData)
+	res.Meta.CountTotalPage()
+	return res, nil
 
-	return resp, nil
 }

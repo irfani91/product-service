@@ -34,6 +34,6 @@ func (s *productService) UpdateProduct(ctx context.Context, req *entity.UpdatePr
 	return s.repo.UpdateProduct(ctx, req)
 }
 
-func (s *productService) GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error) {
+func (s *productService) GetProducts(ctx context.Context, req *entity.ProductsRequest) (entity.ProductsResponse, error) {
 	return s.repo.GetProducts(ctx, req)
 }

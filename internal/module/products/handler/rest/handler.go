@@ -148,32 +148,33 @@ func (h *productHandler) UpdateProduct(c *fiber.Ctx) error {
 
 func (h *productHandler) GetProducts(c *fiber.Ctx) error {
 	var (
-		req = new(entity.ProductsRequest)
+		req = &entity.ProductsRequest{}
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
-		l   = middleware.GetLocals(c)
 	)
 
 	if err := c.QueryParser(req); err != nil {
-		log.Warn().Err(err).Msg("handler::GetProducts - Parse request query")
+		log.Error().Err(err).Msg("service: Failed to parse request query")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
-	req.UserId = l.UserId
-	req.SetDefault()
+	req.SetDefaults()
+
+	if code, errs := req.CostumValidation(); code != 0 {
+		return c.Status(code).JSON(response.Error(errs))
+	}
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::GetProducts - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("service: Invalid request query")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
 	resp, err := h.service.GetProducts(ctx, req)
 	if err != nil {
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success(resp, ""))
-
 }

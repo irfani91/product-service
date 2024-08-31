@@ -10,7 +10,7 @@ type ProductRepository interface {
 	GetProduct(ctx context.Context, req *entity.GetProductRequest) (*entity.GetProductResponse, error)
 	DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error
 	UpdateProduct(ctx context.Context, req *entity.UpdateProductRequest) (*entity.UpdateProductResponse, error)
-	GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error)
+	GetProducts(ctx context.Context, req *entity.ProductsRequest) (entity.ProductsResponse, error)
 }
 
 type ProductService interface {
@@ -18,5 +18,5 @@ type ProductService interface {
 	GetProduct(ctx context.Context, req *entity.GetProductRequest) (*entity.GetProductResponse, error)
 	DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error
 	UpdateProduct(ctx context.Context, req *entity.UpdateProductRequest) (*entity.UpdateProductResponse, error)
-	GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error)
+	GetProducts(ctx context.Context, req *entity.ProductsRequest) (entity.ProductsResponse, error)
 }
