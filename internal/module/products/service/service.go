@@ -1,39 +1,39 @@
 package service
 
 import (
-	"codebase-app/internal/module/shop/entity"
-	"codebase-app/internal/module/shop/ports"
+	"codebase-app/internal/module/products/entity"
+	"codebase-app/internal/module/products/ports"
 	"context"
 )
 
-var _ ports.ShopService = &shopService{}
+var _ ports.ProductService = &productService{}
 
-type shopService struct {
-	repo ports.ShopRepository
+type productService struct {
+	repo ports.ProductRepository
 }
 
-func NewShopService(repo ports.ShopRepository) *shopService {
-	return &shopService{
+func NewProductService(repo ports.ProductRepository) *productService {
+	return &productService{
 		repo: repo,
 	}
 }
 
-func (s *shopService) CreateShop(ctx context.Context, req *entity.CreateShopRequest) (*entity.CreateShopResponse, error) {
-	return s.repo.CreateShop(ctx, req)
+func (s *productService) CreateProduct(ctx context.Context, req *entity.CreateProductRequest) (*entity.CreateProductResponse, error) {
+	return s.repo.CreateProduct(ctx, req)
 }
 
-func (s *shopService) GetShop(ctx context.Context, req *entity.GetShopRequest) (*entity.GetShopResponse, error) {
-	return s.repo.GetShop(ctx, req)
+func (s *productService) GetProduct(ctx context.Context, req *entity.GetProductRequest) (*entity.GetProductResponse, error) {
+	return s.repo.GetProduct(ctx, req)
 }
 
-func (s *shopService) DeleteShop(ctx context.Context, req *entity.DeleteShopRequest) error {
-	return s.repo.DeleteShop(ctx, req)
+func (s *productService) DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error {
+	return s.repo.DeleteProduct(ctx, req)
 }
 
-func (s *shopService) UpdateShop(ctx context.Context, req *entity.UpdateShopRequest) (*entity.UpdateShopResponse, error) {
-	return s.repo.UpdateShop(ctx, req)
+func (s *productService) UpdateProduct(ctx context.Context, req *entity.UpdateProductRequest) (*entity.UpdateProductResponse, error) {
+	return s.repo.UpdateProduct(ctx, req)
 }
 
-func (s *shopService) GetShops(ctx context.Context, req *entity.ShopsRequest) (*entity.ShopsResponse, error) {
-	return s.repo.GetShops(ctx, req)
+func (s *productService) GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error) {
+	return s.repo.GetProducts(ctx, req)
 }

@@ -3,10 +3,10 @@ package handler
 import (
 	"codebase-app/internal/adapter"
 	"codebase-app/internal/middleware"
-	"codebase-app/internal/module/shop/entity"
-	"codebase-app/internal/module/shop/ports"
-	"codebase-app/internal/module/shop/repository"
-	"codebase-app/internal/module/shop/service"
+	"codebase-app/internal/module/products/entity"
+	"codebase-app/internal/module/products/ports"
+	"codebase-app/internal/module/products/repository"
+	"codebase-app/internal/module/products/service"
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
@@ -14,51 +14,51 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type shopHandler struct {
-	service ports.ShopService
+type productHandler struct {
+	service ports.ProductService
 }
 
-func NewProductsHandler() *shopHandler {
+func NewProductsHandler() *productHandler {
 	var (
-		handler = new(shopHandler)
-		repo    = repository.NewShopRepository(adapter.Adapters.ShopeefunPostgres)
-		service = service.NewShopService(repo)
+		handler = new(productHandler)
+		repo    = repository.NewProductRepository(adapter.Adapters.ShopeefunPostgres)
+		service = service.NewProductService(repo)
 	)
 	handler.service = service
 
 	return handler
 }
 
-func (h *shopHandler) Register(router fiber.Router) {
-	router.Get("/shops", middleware.UserIdHeader, h.GetShops)
-	router.Post("/shops", middleware.UserIdHeader, h.CreateShop)
-	router.Get("/shops/:id", h.GetShop)
-	router.Delete("/shops/:id", middleware.UserIdHeader, h.DeleteShop)
-	router.Patch("/shops/:id", middleware.UserIdHeader, h.UpdateShop)
+func (h *productHandler) Register(router fiber.Router) {
+	router.Get("/", middleware.UserIdHeader, h.GetProducts)
+	router.Post("/", middleware.UserIdHeader, h.CreateProduct)
+	router.Get("/:id", h.GetProduct)
+	router.Delete(":id", middleware.UserIdHeader, h.DeleteProduct)
+	router.Patch("/:id", middleware.UserIdHeader, h.UpdateProduct)
 }
 
-func (h *shopHandler) CreateShop(c *fiber.Ctx) error {
+func (h *productHandler) CreateProduct(c *fiber.Ctx) error {
 	var (
-		req = new(entity.CreateShopRequest)
+		req = new(entity.CreateProductRequest)
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
 		l   = middleware.GetLocals(c)
 	)
 
 	if err := c.BodyParser(req); err != nil {
-		log.Warn().Err(err).Msg("handler::CreateShop - Parse request body")
+		log.Warn().Err(err).Msg("handler::CreateProduct - Parse request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	req.UserId = l.UserId
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::CreateShop - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("handler::CreateProduct - Validate request body")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp, err := h.service.CreateShop(ctx, req)
+	resp, err := h.service.CreateProduct(ctx, req)
 	if err != nil {
 		code, errs := errmsg.Errors[error](err)
 		return c.Status(code).JSON(response.Error(errs))
@@ -68,9 +68,9 @@ func (h *shopHandler) CreateShop(c *fiber.Ctx) error {
 
 }
 
-func (h *shopHandler) GetShop(c *fiber.Ctx) error {
+func (h *productHandler) GetProduct(c *fiber.Ctx) error {
 	var (
-		req = new(entity.GetShopRequest)
+		req = new(entity.GetProductRequest)
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
 	)
@@ -78,12 +78,12 @@ func (h *shopHandler) GetShop(c *fiber.Ctx) error {
 	req.Id = c.Params("id")
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::GetShop - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("handler::GetProduct - Validate request body")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp, err := h.service.GetShop(ctx, req)
+	resp, err := h.service.GetProduct(ctx, req)
 	if err != nil {
 		code, errs := errmsg.Errors[error](err)
 		return c.Status(code).JSON(response.Error(errs))
@@ -92,23 +92,21 @@ func (h *shopHandler) GetShop(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.Success(resp, ""))
 }
 
-func (h *shopHandler) DeleteShop(c *fiber.Ctx) error {
+func (h *productHandler) DeleteProduct(c *fiber.Ctx) error {
 	var (
-		req = new(entity.DeleteShopRequest)
+		req = new(entity.DeleteProductRequest)
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
-		l   = middleware.GetLocals(c)
 	)
-	req.UserId = l.UserId
 	req.Id = c.Params("id")
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::DeleteShop - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("handler::DeleteProduct - Validate request body")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	err := h.service.DeleteShop(ctx, req)
+	err := h.service.DeleteProduct(ctx, req)
 	if err != nil {
 		code, errs := errmsg.Errors[error](err)
 		return c.Status(code).JSON(response.Error(errs))
@@ -117,16 +115,16 @@ func (h *shopHandler) DeleteShop(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.Success(nil, ""))
 }
 
-func (h *shopHandler) UpdateShop(c *fiber.Ctx) error {
+func (h *productHandler) UpdateProduct(c *fiber.Ctx) error {
 	var (
-		req = new(entity.UpdateShopRequest)
+		req = new(entity.UpdateProductRequest)
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
 		l   = middleware.GetLocals(c)
 	)
 
 	if err := c.BodyParser(req); err != nil {
-		log.Warn().Err(err).Msg("handler::UpdateShop - Parse request body")
+		log.Warn().Err(err).Msg("handler::UpdateProduct - Parse request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
@@ -134,12 +132,12 @@ func (h *shopHandler) UpdateShop(c *fiber.Ctx) error {
 	req.Id = c.Params("id")
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::UpdateShop - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("handler::UpdateProduct - Validate request body")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp, err := h.service.UpdateShop(ctx, req)
+	resp, err := h.service.UpdateProduct(ctx, req)
 	if err != nil {
 		code, errs := errmsg.Errors[error](err)
 		return c.Status(code).JSON(response.Error(errs))
@@ -148,16 +146,16 @@ func (h *shopHandler) UpdateShop(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.Success(resp, ""))
 }
 
-func (h *shopHandler) GetShops(c *fiber.Ctx) error {
+func (h *productHandler) GetProducts(c *fiber.Ctx) error {
 	var (
-		req = new(entity.ShopsRequest)
+		req = new(entity.ProductsRequest)
 		ctx = c.Context()
 		v   = adapter.Adapters.Validator
 		l   = middleware.GetLocals(c)
 	)
 
 	if err := c.QueryParser(req); err != nil {
-		log.Warn().Err(err).Msg("handler::GetShops - Parse request query")
+		log.Warn().Err(err).Msg("handler::GetProducts - Parse request query")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
@@ -165,12 +163,12 @@ func (h *shopHandler) GetShops(c *fiber.Ctx) error {
 	req.SetDefault()
 
 	if err := v.Validate(req); err != nil {
-		log.Warn().Err(err).Any("payload", req).Msg("handler::GetShops - Validate request body")
+		log.Warn().Err(err).Any("payload", req).Msg("handler::GetProducts - Validate request body")
 		code, errs := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp, err := h.service.GetShops(ctx, req)
+	resp, err := h.service.GetProducts(ctx, req)
 	if err != nil {
 		code, errs := errmsg.Errors[error](err)
 		return c.Status(code).JSON(response.Error(errs))

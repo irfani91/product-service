@@ -1,22 +1,22 @@
 package ports
 
 import (
-	"codebase-app/internal/module/shop/entity"
+	"codebase-app/internal/module/products/entity"
 	"context"
 )
 
-type ShopRepository interface {
-	CreateShop(ctx context.Context, req *entity.CreateShopRequest) (*entity.CreateShopResponse, error)
-	GetShop(ctx context.Context, req *entity.GetShopRequest) (*entity.GetShopResponse, error)
-	DeleteShop(ctx context.Context, req *entity.DeleteShopRequest) error
-	UpdateShop(ctx context.Context, req *entity.UpdateShopRequest) (*entity.UpdateShopResponse, error)
-	GetShops(ctx context.Context, req *entity.ShopsRequest) (*entity.ShopsResponse, error)
+type ProductRepository interface {
+	CreateProduct(ctx context.Context, req *entity.CreateProductRequest) (*entity.CreateProductResponse, error)
+	GetProduct(ctx context.Context, req *entity.GetProductRequest) (*entity.GetProductResponse, error)
+	DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error
+	UpdateProduct(ctx context.Context, req *entity.UpdateProductRequest) (*entity.UpdateProductResponse, error)
+	GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error)
 }
 
-type ShopService interface {
-	CreateShop(ctx context.Context, req *entity.CreateShopRequest) (*entity.CreateShopResponse, error)
-	GetShop(ctx context.Context, req *entity.GetShopRequest) (*entity.GetShopResponse, error)
-	DeleteShop(ctx context.Context, req *entity.DeleteShopRequest) error
-	UpdateShop(ctx context.Context, req *entity.UpdateShopRequest) (*entity.UpdateShopResponse, error)
-	GetShops(ctx context.Context, req *entity.ShopsRequest) (*entity.ShopsResponse, error)
+type ProductService interface {
+	CreateProduct(ctx context.Context, req *entity.CreateProductRequest) (*entity.CreateProductResponse, error)
+	GetProduct(ctx context.Context, req *entity.GetProductRequest) (*entity.GetProductResponse, error)
+	DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error
+	UpdateProduct(ctx context.Context, req *entity.UpdateProductRequest) (*entity.UpdateProductResponse, error)
+	GetProducts(ctx context.Context, req *entity.ProductsRequest) (*entity.ProductsResponse, error)
 }
