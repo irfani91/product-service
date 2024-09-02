@@ -39,6 +39,8 @@ type GetProductRequest struct {
 type GetProductResponse struct {
 	Id          string    `json:"id" db:"id"`
 	ShopId      string    `json:"shop_id" db:"shop_id"`
+	ShopName    string    `json:"shop_name" db:"shop_name"`
+	Category    string    `json:"category" db:"category"`
 	CategoryId  string    `json:"category_id" db:"category_id"`
 	Name        string    `json:"name" db:"name"`
 	Description *string   `json:"description" db:"description"`
@@ -147,8 +149,10 @@ type ProductsResponse struct {
 
 type Product struct {
 	Id         string    `json:"id" db:"id"`
+	Category   string    `json:"category" db:"category"`
 	CategoryId string    `json:"category_id" db:"category_id"`
 	ShopId     string    `json:"shop_id" db:"shop_id"`
+	ShopName   string    `json:"shop_name" db:"shop_name"`
 	Name       string    `json:"name" db:"name"`
 	Brand      *string   `json:"brand" db:"brand"`
 	ImageUrl   *string   `json:"image_url" db:"image_url"`

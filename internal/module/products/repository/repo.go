@@ -159,57 +159,63 @@ func (r *productRepository) GetProducts(ctx context.Context, req *entity.Product
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id,
-			category_id,
-			shop_id,
-			name,
+			products.id as id,
+			product_categories.id as category_id,
+			product_categories.name as category,
+			products.shop_id as shop_id,
+			shops.name as shop_name,
+			products.name as name,
 			image_url,
 			price,
 			brand,
-			created_at,
-			updated_at
+			products.created_at as created_at,
+			products.updated_at as updated_at
 		FROM
 			products
+		JOIN shops 
+			ON products.shop_id = shops.id
+		JOIN product_categories
+			ON products.category_id = product_categories.id
 		WHERE
-			deleted_at IS NULL
+			products.deleted_at IS NULL
 	`
 
 	if req.ShopId != "" {
-		query += " AND shop_id = :shop_id"
+		query += " AND products.shop_id = :shop_id"
 		arg["shop_id"] = req.ShopId
 	}
 
 	if req.CategoryId != "" {
-		query += " AND category_id = :category_id"
+		query += " AND products.category_id = :category_id"
 		arg["category_id"] = req.CategoryId
 	}
 
 	if req.Name != "" {
-		query += " AND name ILIKE '%' || :name || '%'"
+		query += " AND products.name ILIKE '%' || :name || '%'"
 		arg["name"] = req.Name
 	}
 
 	if req.Brand != "" {
-		query += " AND name ILIKE '%' || :brand || '%'"
+		query += " AND products.brand ILIKE '%' || :brand || '%'"
 		arg["brand"] = req.Brand
 	}
 
 	if req.PriceMinStr != "" {
-		query += " AND price >= :price_min"
+		query += " AND products.price >= :price_min"
 		arg["price_min"] = req.PriceMin
 	}
 
 	if req.PriceMaxStr != "" {
-		query += " AND price <= :price_max"
+		query += " AND products.price <= :price_max"
 		arg["price_max"] = req.PriceMax
 	}
 
 	if req.IsAvailable {
-		query += " AND stock > 0"
+		query += " AND products.stock > 0"
 	}
 
 	query += `
-		ORDER BY created_at DESC
+		ORDER BY products.created_at DESC
 		LIMIT :paginate
 		OFFSET :offset
 	`
@@ -233,7 +239,9 @@ func (r *productRepository) GetProducts(ctx context.Context, req *entity.Product
 		res.Items = append(res.Items, entity.Product{
 			Id:         d.Id,
 			CategoryId: d.CategoryId,
+			Category:   d.Category,
 			ShopId:     d.ShopId,
+			ShopName:   d.ShopName,
 			Name:       d.Name,
 			ImageUrl:   d.ImageUrl,
 			Price:      d.Price,
