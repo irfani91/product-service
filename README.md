@@ -66,5 +66,5 @@ curl --location 'http://localhost:4000/products?paginate=5&page=1&name=Gamis%20m
 
 ## ERD
 This ERD describes how this dbserver works.
-![Server-ERD](?raw=true)
+![Server-ERD](https://github.com/irfani91/product-service/blob/main/public/img/ERD.png?raw=true)
  
